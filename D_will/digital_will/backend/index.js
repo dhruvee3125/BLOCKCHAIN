@@ -120,6 +120,59 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
+// Register new user endpoint
+app.post('/api/register', async (req, res) => {
+  try {
+    const { username, password, role } = req.body;
+
+    if (!username || !password || !role) {
+      return res.status(400).json({ error: 'Username, password, and role required' });
+    }
+
+    if (users[username]) {
+      return res.status(400).json({ error: 'Username already exists' });
+    }
+
+    // Validate role
+    const validRoles = ['OWNER', 'BENEFICIARY', 'LEGAL_ADVISOR', 'ADMIN'];
+    if (!validRoles.includes(role)) {
+      return res.status(400).json({ error: 'Invalid role. Must be OWNER, BENEFICIARY, LEGAL_ADVISOR, or ADMIN' });
+    }
+
+    // Generate a unique Ethereum address for the new user
+    const newUser = ethers.Wallet.createRandom();
+    
+    // Hash the password
+    const passwordHash = await hashPassword(password);
+
+    // Create new user
+    users[username] = {
+      passwordHash: passwordHash,
+      address: newUser.address,
+      role: role,
+      createdAt: new Date()
+    };
+
+    // Generate JWT token
+    const token = jwt.sign(
+      { username, address: newUser.address, role },
+      JWT_SECRET,
+      { expiresIn: '24h' }
+    );
+
+    return res.json({
+      success: true,
+      token,
+      address: newUser.address,
+      role: role,
+      username,
+      message: `Welcome ${username}! Account created as ${role}`
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Verify token middleware
 const verifyToken = (req, res, next) => {
   const authHeader = req.headers.authorization;

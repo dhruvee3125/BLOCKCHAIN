@@ -1,0 +1,122 @@
+[
+  {
+    "inputs": [
+      { "internalType": "address", "name": "_treasury", "type": "address" }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "internalType": "address", "name": "user", "type": "address" },
+      { "indexed": false, "internalType": "uint8", "name": "role", "type": "uint8" },
+      { "indexed": false, "internalType": "uint256", "name": "timestamp", "type": "uint256" }
+    ],
+    "name": "UserRegistered",
+    "type": "event"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint8", "name": "_role", "type": "uint8" }
+    ],
+    "name": "registerUser",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "_beneficiary", "type": "address" },
+      { "internalType": "bytes32", "name": "_willHash", "type": "bytes32" },
+      { "internalType": "string", "name": "_ipfsCID", "type": "string" },
+      { "internalType": "uint256", "name": "_lockTime", "type": "uint256" },
+      { "internalType": "uint256", "name": "_assetValue", "type": "uint256" }
+    ],
+    "name": "createWill",
+    "outputs": [
+      { "internalType": "bytes32", "name": "", "type": "bytes32" }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "_user", "type": "address" }
+    ],
+    "name": "getUser",
+    "outputs": [
+      {
+        "components": [
+          { "internalType": "address", "name": "userAddress", "type": "address" },
+          { "internalType": "uint8", "name": "role", "type": "uint8" },
+          { "internalType": "uint256", "name": "registrationTime", "type": "uint256" },
+          { "internalType": "uint256", "name": "lastLogin", "type": "uint256" },
+          { "internalType": "bool", "name": "isActive", "type": "bool" },
+          { "internalType": "uint256", "name": "willCount", "type": "uint256" },
+          { "internalType": "uint256", "name": "reputation", "type": "uint256" }
+        ],
+        "internalType": "struct DigitalWill.User",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "bytes32", "name": "_willId", "type": "bytes32" }
+    ],
+    "name": "getWill",
+    "outputs": [
+      {
+        "components": [
+          { "internalType": "address", "name": "owner", "type": "address" },
+          { "internalType": "address", "name": "beneficiary", "type": "address" },
+          { "internalType": "bytes32", "name": "willHash", "type": "bytes32" },
+          { "internalType": "string", "name": "ipfsCID", "type": "string" },
+          { "internalType": "uint8", "name": "status", "type": "uint8" },
+          { "internalType": "bool", "name": "verified", "type": "bool" },
+          { "internalType": "bool", "name": "adminApproved", "type": "bool" }
+        ],
+        "internalType": "struct DigitalWill.Will",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "_owner", "type": "address" }
+    ],
+    "name": "getUserWills",
+    "outputs": [
+      { "internalType": "bytes32[]", "name": "", "type": "bytes32[]" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "_beneficiary", "type": "address" }
+    ],
+    "name": "getBeneficiaryWills",
+    "outputs": [
+      { "internalType": "bytes32[]", "name": "", "type": "bytes32[]" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "ADMIN_ROLE",
+    "outputs": [
+      { "internalType": "bytes32", "name": "", "type": "bytes32" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]

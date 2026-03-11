@@ -17,6 +17,8 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [isSignupMode, setIsSignupMode] = useState(false);
+  const [signupRole, setSignupRole] = useState('OWNER');
 
   // Will management states
   const [wills, setWills] = useState([]);
@@ -74,6 +76,51 @@ function App() {
       setPassword('');
 
       // Fetch wills after login
+      fetchWills(data.token);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle signup
+  const handleSignup = async (e) => {
+    e.preventDefault();
+    try {
+      setLoading(true);
+      setError('');
+
+      if (password.length < 6) {
+        throw new Error('Password must be at least 6 characters long');
+      }
+
+      const response = await fetch(`${AUTH_API}/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          username, 
+          password,
+          role: signupRole
+        })
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Registration failed');
+      }
+
+      const data = await response.json();
+      setAuthToken(data.token);
+      setAccount(data.address);
+      setUserRole(data.role);
+      setAuthenticated(true);
+      setSuccess(data.message);
+      setUsername('');
+      setPassword('');
+      setIsSignupMode(false);
+
+      // Fetch wills after signup
       fetchWills(data.token);
     } catch (err) {
       setError(err.message);
@@ -419,8 +466,9 @@ function App() {
 
           <div className="wallet-section" style={{ maxWidth: '500px' }}>
             <div className="login-form">
-              <h2>🔒 Login</h2>
-              <form onSubmit={handleLogin}>
+              <h2>{isSignupMode ? '✅ Create Account' : '🔒 Login'}</h2>
+              
+              <form onSubmit={isSignupMode ? handleSignup : handleLogin}>
                 <input
                   type="text"
                   placeholder="Username"
@@ -435,20 +483,67 @@ function App() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                 />
+                
+                {isSignupMode && (
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '5px', fontSize: '14px', color: '#666' }}>
+                      Select Your Role:
+                    </label>
+                    <select 
+                      value={signupRole} 
+                      onChange={(e) => setSignupRole(e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '10px',
+                        marginBottom: '10px',
+                        borderRadius: '5px',
+                        border: '1px solid #ddd',
+                        fontSize: '14px'
+                      }}
+                    >
+                      <option value="OWNER">Owner - Create and manage wills</option>
+                      <option value="BENEFICIARY">Beneficiary - Receive assets</option>
+                      <option value="LEGAL_ADVISOR">Legal Advisor - Verify wills</option>
+                      <option value="ADMIN">Admin - Oversee system</option>
+                    </select>
+                  </div>
+                )}
+                
                 <button type="submit" disabled={loading} className="connect-btn">
-                  {loading ? 'Logging in...' : '✓ Login'}
+                  {loading ? (isSignupMode ? 'Creating Account...' : 'Logging in...') : (isSignupMode ? '✓ Create Account' : '✓ Login')}
                 </button>
               </form>
 
-              <div className="demo-credentials">
-                <p style={{ fontSize: '12px', color: '#666', marginTop: '10px' }}>Demo Accounts:</p>
-                <div style={{ fontSize: '11px', color: '#999' }}>
-                  <p><strong>Owner:</strong> owner / owner123</p>
-                  <p><strong>Beneficiary:</strong> beneficiary / beneficiary123</p>
-                  <p><strong>Legal Advisor:</strong> legal_advisor / advisor123</p>
-                  <p><strong>Admin:</strong> admin / admin123</p>
-                </div>
+              <div style={{ marginTop: '15px', textAlign: 'center', borderTop: '1px solid #eee', paddingTop: '15px' }}>
+                <p style={{ fontSize: '13px', color: '#666', marginBottom: '10px' }}>
+                  {isSignupMode ? 'Already have an account?' : 'New to Digital Will?'}
+                </p>
+                <button 
+                  onClick={() => {
+                    setIsSignupMode(!isSignupMode);
+                    setError('');
+                    setSuccess('');
+                    setUsername('');
+                    setPassword('');
+                  }}
+                  className="connect-btn"
+                  style={{ backgroundColor: '#6c63ff', marginBottom: '15px' }}
+                >
+                  {isSignupMode ? '← Back to Login' : '+ Create New Account'}
+                </button>
               </div>
+
+              {!isSignupMode && (
+                <div className="demo-credentials">
+                  <p style={{ fontSize: '12px', color: '#666', marginTop: '10px' }}>Demo Accounts:</p>
+                  <div style={{ fontSize: '11px', color: '#999' }}>
+                    <p><strong>Owner:</strong> owner / owner123</p>
+                    <p><strong>Beneficiary:</strong> beneficiary / beneficiary123</p>
+                    <p><strong>Legal Advisor:</strong> legal_advisor / advisor123</p>
+                    <p><strong>Admin:</strong> admin / admin123</p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

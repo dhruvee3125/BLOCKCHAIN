@@ -1,0 +1,13 @@
+{
+  "contractAddress": "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707",
+  "deployerAddress": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+  "treasuryAddress": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+  "adminRole": "0xa49807205ce4d355092ef5a8a18f56e8913cf4a201fbe287825b095693c21775",
+  "legalAdvisorRole": "0x7cc3a0f0806fe9cf51dab54b5a85a7ba0a97421954d87710b88ae20e630683f4",
+  "emergencyContactRole": "0x2bbd37dbee52d185c2bbec33b21ee5d80450f7c559fbc426b2279145dc228a21",
+  "arbiterRole": "0xbb08418a67729a078f87bbc8d02a770929bb68f5bfdf134ae2ead6ed38e2f4ae",
+  "deploymentBlock": 7,
+  "deploymentTime": "2026-03-11T17:10:00.572Z",
+  "network": "localhost",
+  "chainId": 1337
+}
