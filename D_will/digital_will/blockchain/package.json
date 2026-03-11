@@ -1,0 +1,19 @@
+{
+  "name": "blockchain",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "node ./node_modules/hardhat/internal/cli/bootstrap.js test",
+    "compile": "node ./node_modules/hardhat/internal/cli/bootstrap.js compile",
+    "deploy": "node ./node_modules/hardhat/internal/cli/bootstrap.js run scripts/deploy.cjs",
+    "node": "node ./node_modules/hardhat/internal/cli/bootstrap.js node"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^6.1.2",
+    "hardhat": "^2.22.3"
+  }
+}
