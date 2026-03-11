@@ -28,21 +28,12 @@ function App() {
     beneficiaryUsername: '',
     asset: '',
     assetDescription: '',
-    lockTime: '3600', // 1 hour in seconds
-    requiresAdminApproval: false
+    lockTime: '3600' // 1 hour in seconds
   });
-
-  // File upload state
-  const [documentFile, setDocumentFile] = useState(null);
 
   // Verification form
   const [verificationForm, setVerificationForm] = useState({
     verified: false,
-    reason: ''
-  });
-
-  // Admin approval form
-  const [adminApprovalForm, setAdminApprovalForm] = useState({
     reason: ''
   });
 
@@ -81,7 +72,6 @@ function App() {
       setLoading(false);
     }
   };
-
 
   // Fetch user's wills
   const fetchWills = async (token) => {
@@ -242,7 +232,7 @@ function App() {
     }
   };
 
-  // Handle admin override
+  // Admin override
   const handleAdminOverride = async (willId, action) => {
     try {
       setLoading(true);
@@ -273,115 +263,6 @@ function App() {
     }
   };
 
-  // Upload will document to IPFS
-  const handleUploadDocument = async (willId) => {
-    try {
-      if (!documentFile) {
-        setError('Please select a file first');
-        return;
-      }
-
-      setLoading(true);
-      setError('');
-
-      const formData = new FormData();
-      formData.append('document', documentFile);
-
-      const response = await fetch(`${AUTH_API}/wills/${willId}/upload-document`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${authToken}`
-        },
-        body: formData
-      });
-
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error);
-
-      setSuccess('✅ Document uploaded to IPFS successfully! CID: ' + data.ipfsCID);
-      setDocumentFile(null);
-      await handleRefreshWills();
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Request admin approval
-  const handleRequestAdminApproval = async (willId) => {
-    try {
-      setLoading(true);
-      setError('');
-
-      const response = await fetch(`${AUTH_API}/wills/${willId}/request-admin-approval`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${authToken}` }
-      });
-
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error);
-
-      setSuccess('✅ Admin approval requested');
-      await handleRefreshWills();
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Grant admin approval
-  const handleGrantAdminApproval = async (willId) => {
-    try {
-      setLoading(true);
-      setError('');
-
-      const response = await fetch(`${AUTH_API}/wills/${willId}/grant-admin-approval`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${authToken}` }
-      });
-
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error);
-
-      setSuccess('✅ Admin approval granted');
-      await handleRefreshWills();
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Reject admin approval
-  const handleRejectAdminApproval = async (willId) => {
-    try {
-      setLoading(true);
-      setError('');
-
-      const response = await fetch(`${AUTH_API}/wills/${willId}/reject-admin-approval`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authToken}`
-        },
-        body: JSON.stringify({ reason: adminApprovalForm.reason || 'No reason provided' })
-      });
-
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error);
-
-      setSuccess('✅ Admin approval rejected');
-      setAdminApprovalForm({ reason: '' });
-      await handleRefreshWills();
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   // Logout
   const handleLogout = () => {
     setAuthenticated(false);
@@ -400,7 +281,6 @@ function App() {
       'CREATED': '#ffd700',
       'PENDING_VERIFICATION': '#ff9800',
       'VERIFIED': '#4caf50',
-      'PENDING_ADMIN_APPROVAL': '#e91e63',
       'EXECUTED': '#2196f3',
       'CLAIMED': '#9c27b0'
     };
@@ -537,17 +417,6 @@ function App() {
                     <small>Time before will can be executed (3600 = 1 hour)</small>
                   </div>
 
-                  <div className="form-group">
-                    <label>
-                      <input
-                        type="checkbox"
-                        checked={createForm.requiresAdminApproval}
-                        onChange={(e) => setCreateForm({...createForm, requiresAdminApproval: e.target.checked})}
-                      />
-                      {' '} Require Admin Approval Before Execution
-                    </label>
-                  </div>
-
                   <div className="form-actions">
                     <button type="submit" disabled={loading} className="action-btn execute-btn">
                       {loading ? 'Creating...' : '✓ Create Will'}
@@ -596,34 +465,6 @@ function App() {
                     </div>
 
                     <div className="will-actions">
-                      {/* Owner: Upload Document */}
-                      {userRole === 'OWNER' && (
-                        <div style={{ marginBottom: '10px', padding: '10px', background: '#f5f5f5', borderRadius: '5px' }}>
-                          <p style={{ margin: '0 0 8px 0', fontSize: '14px' }}>📄 Upload Will Document (IPFS):</p>
-                          <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
-                            <input
-                              type="file"
-                              onChange={(e) => setDocumentFile(e.target.files?.[0] || null)}
-                              accept=".pdf,.doc,.docx,.txt"
-                              style={{ flex: 1 }}
-                            />
-                            <button
-                              onClick={() => handleUploadDocument(will.id)}
-                              disabled={loading || !documentFile}
-                              className="action-btn"
-                              style={{ padding: '8px 12px', background: '#9c27b0', whiteSpace: 'nowrap' }}
-                            >
-                              📤 Upload
-                            </button>
-                          </div>
-                          {will.ipfsCID && (
-                            <p style={{ margin: '8px 0 0 0', fontSize: '12px', color: '#666' }}>
-                              ✅ Document uploaded (CID: {will.ipfsCID.slice(0, 10)}...)
-                            </p>
-                          )}
-                        </div>
-                      )}
-
                       {/* Owner: Request Verification */}
                       {userRole === 'OWNER' && will.status === 'CREATED' && (
                         <button
@@ -635,40 +476,14 @@ function App() {
                         </button>
                       )}
 
-                      {/* Owner: Execute After Verification (no admin approval needed) */}
-                      {userRole === 'OWNER' && will.status === 'VERIFIED' && !will.requiresAdminApproval && (
+                      {/* Owner: Execute After Verification */}
+                      {userRole === 'OWNER' && will.status === 'VERIFIED' && (
                         <button
                           onClick={() => handleExecuteWill(will.id)}
                           disabled={loading}
                           className="action-btn execute-btn"
                         >
                           ✓ Execute Will
-                        </button>
-                      )}
-
-                      {/* Owner: Request Admin Approval */}
-                      {userRole === 'OWNER' && will.status === 'PENDING_ADMIN_APPROVAL' && (
-                        <div style={{ padding: '10px', background: '#fff3cd', borderRadius: '5px', marginBottom: '10px' }}>
-                          <p style={{ margin: '0 0 8px 0', fontSize: '14px', fontWeight: 'bold' }}>⏳ Waiting for Admin Approval</p>
-                          <button
-                            onClick={() => handleRefreshWills()}
-                            disabled={loading}
-                            className="action-btn"
-                            style={{ background: '#ff9800', padding: '8px 16px' }}
-                          >
-                            🔄 Refresh Status
-                          </button>
-                        </div>
-                      )}
-
-                      {/* Owner: Execute After Admin Approval */}
-                      {userRole === 'OWNER' && will.status === 'VERIFIED' && will.requiresAdminApproval && will.adminApprovalGranted && (
-                        <button
-                          onClick={() => handleExecuteWill(will.id)}
-                          disabled={loading}
-                          className="action-btn execute-btn"
-                        >
-                          ✓ Execute Will (Admin Approved)
                         </button>
                       )}
 
@@ -720,39 +535,8 @@ function App() {
                         </div>
                       )}
 
-                      {/* Admin: Grant/Reject Approval */}
-                      {userRole === 'ADMIN' && will.status === 'PENDING_ADMIN_APPROVAL' && (
-                        <div className="admin-approval-section" style={{ padding: '10px', background: '#e3f2fd', borderRadius: '5px' }}>
-                          <p style={{ margin: '0 0 8px 0', fontSize: '14px', fontWeight: 'bold' }}>🔐 Admin Approval Requested</p>
-                          <textarea
-                            value={adminApprovalForm.reason}
-                            onChange={(e) => setAdminApprovalForm({...adminApprovalForm, reason: e.target.value})}
-                            placeholder="Reason for approval/rejection"
-                            rows="2"
-                            style={{ width: '100%', marginBottom: '10px', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
-                          />
-                          <div style={{ display: 'flex', gap: '10px' }}>
-                            <button
-                              onClick={() => handleGrantAdminApproval(will.id)}
-                              disabled={loading}
-                              className="action-btn claim-btn"
-                            >
-                              ✅ Grant Approval
-                            </button>
-                            <button
-                              onClick={() => handleRejectAdminApproval(will.id)}
-                              disabled={loading}
-                              className="action-btn"
-                              style={{ background: '#ff6b6b' }}
-                            >
-                              ❌ Reject
-                            </button>
-                          </div>
-                        </div>
-                      )}
-
                       {/* Admin: Override Functions */}
-                      {userRole === 'ADMIN' && will.status !== 'PENDING_ADMIN_APPROVAL' && (
+                      {userRole === 'ADMIN' && (
                         <div style={{ display: 'flex', gap: '10px' }}>
                           {!will.verified && (
                             <button
